@@ -299,7 +299,7 @@ int main(void)
 	balken_pos_x = 8;//linke seite balken startposition
 	ball_vert_richt = UP; //0=down 1=up
 	ball_horiz_richt = LEFT; 
-	balk_horiz_richt=0;//0=left to right, 1=right to left
+	balk_horiz_richt=LEFT;//0=left to right, 1=right to left
 	ball_speed_y=0;
 	ball_speed_x=0;
 	ball_speed_y_counter=0;
@@ -330,14 +330,14 @@ int main(void)
 		{
 			entprell=RELOAD_ENTPRELL;
 			if((balken_pos_x+balk_lenght)!=84)balken_pos_x++;
-			balk_horiz_richt=0;
+			balk_horiz_richt=LEFT;
 			balk_refresh=EIN;
 		}
 		if(T_BLUE)//move left
 		{
 			entprell=RELOAD_ENTPRELL;
 			if(balken_pos_x!=0)balken_pos_x--;
-			balk_horiz_richt=1;
+			balk_horiz_richt=RIGHT;
 			balk_refresh=EIN;
 		}
 		
@@ -355,9 +355,11 @@ int main(void)
 		
 		if(ball_neu.posy==4)ball_vert_richt=DOWN;//reached top screen border
 		
-		if((ball_neu.posy==42)&&((ball_neu.posx+ball_radius)>balk_end_left)&&((ball_neu.posx-ball_radius)<balk_end_right))
+		//bounce ball on balk
+		if((ball_neu.posy==41)&&((ball_neu.posx+ball_radius)>balk_end_left)&&((ball_neu.posx-ball_radius)<balk_end_right))
 		{
 			ball_vert_richt=UP;
+			balk_refresh=EIN;
 			if((ball_neu.posx+ball_radius)<(balk_end_left+5))
 			{
 				ball_speed_x=6;
@@ -369,7 +371,7 @@ int main(void)
 					}else ball_speed_x=0;
 			
 			
-		}
+		}else
 		
 		if(ball_neu.posx-ball_radius==0)ball_horiz_richt=RIGHT;
 		if(ball_neu.posx+ball_radius==84)ball_horiz_richt=LEFT;
@@ -403,20 +405,17 @@ int main(void)
 			if(ball_refresh==EIN)//only draw ball when position changed
 			{
 				ball_refresh=AUS;
-				//delete old ball draw new one
-				if(ball_vert_richt==DOWN)
-				{
-					glcd_draw_circle(ball_alt.posx, ball_alt.posy, ball_radius, WHITE);
-					glcd_draw_circle(ball_neu.posx, ball_neu.posy, ball_radius, BLACK);
-				}else glcd_draw_circle(ball_alt.posx, ball_alt.posy, ball_radius, WHITE);glcd_draw_circle(ball_neu.posx, ball_neu.posy, ball_radius, BLACK);
-			ball_alt=ball_neu;
+				
+				glcd_draw_circle(ball_alt.posx, ball_alt.posy, ball_radius, WHITE);
+				glcd_draw_circle(ball_neu.posx, ball_neu.posy, ball_radius, BLACK);
+				ball_alt=ball_neu;//save new ball position
 			}
 			
 			if(balk_refresh==EIN)//only draw balk when position changed
 			{
 				balk_refresh=AUS;
 				//delete old plank draw new one
-				if(balk_horiz_richt==0)
+				if(balk_horiz_richt==LEFT)
 				{
 					glcd_draw_rect(balken_pos_x-1, balk_vert_pos, 16, 2, WHITE);
 					glcd_draw_rect(balken_pos_x, balk_vert_pos, 16, 2, BLACK);
