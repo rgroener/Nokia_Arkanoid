@@ -44,10 +44,10 @@
 //	  L1     M    R1
 //	|=====|=====|=====|
 //
-#define BALK_ZONE_L1 ball_pos_x < (balk_end_left+5)											
-#define BALK_ZONE_M (ball_pos_x > (balk_end_left+5))&&(ball_pos_x < (balk_end_left+10))	
-#define BALK_ZONE_R1 (ball_pos_x > (balk_end_left+10))&&(ball_pos_x < (balk_end_right))	
-#define BALKEN (ball_pos_y==42)&&((balk_end_left < (ball_pos_x+ball_radius)))&&(balk_end_right>(ball_pos_x+ball_radius))//Balken P
+#define BALK_ZONE_L1 ball_neu.posx < (balk_end_left+5)											
+#define BALK_ZONE_M (ball_neu.posx > (balk_end_left+5))&&(ball_neu.posx < (balk_end_left+10))	
+#define BALK_ZONE_R1 (ball_neu.posx > (balk_end_left+10))&&(ball_neu.posx < (balk_end_right))	
+#define BALKEN (ball_neu.posy==42)&&((balk_end_left < (ball_neu.posx+ball_radius)))&&(balk_end_right>(ball_neu.posx+ball_radius))//Balken P
 /* Function prototypes */
 static void setup(void);
 char buffer[20]={};
@@ -59,9 +59,18 @@ static void setup(void)
 
 uint8_t ms, ms10,ms100,sec,min,entprell, state;
 
-volatile uint8_t ball_pos_y, balken_pos_x, ball_vert_richt, ball_horiz_richt, balk_horiz_richt, ball_refresh, balk_refresh;
-volatile uint8_t ball_speed_y, ball_speed_x, ball_speed_y_counter,ball_speed_x_counter;
-uint8_t balk_vert_pos, balk_end_left, balk_end_right, balk_lenght, ball_pos_x, ball_radius;
+volatile uint8_t balken_pos_x, ball_vert_richt, ball_horiz_richt, balk_horiz_richt, ball_refresh, balk_refresh;
+volatile uint8_t ball_speed_y, ball_speed_x, ball_speed_y_counter,ball_speed_x_counter, start;
+uint8_t balk_vert_pos, balk_end_left, balk_end_right, balk_lenght, ball_radius;
+
+uint8_t test=0;
+
+struct balls{
+	
+	uint8_t posx;
+	uint8_t posy;
+	
+}ball_neu, ball_alt;
 
 ISR (TIMER1_COMPA_vect)
 {
@@ -70,14 +79,14 @@ ISR (TIMER1_COMPA_vect)
 	
 	//y-movement ball
 	ball_speed_y_counter++;
-	if(ball_speed_y_counter>=ball_speed_y)
+	if((ball_speed_y_counter>=ball_speed_y&& (ball_speed_y!=0)))
 	{
 		ball_refresh=EIN;
 		ball_speed_y_counter=0;
 		if(ball_vert_richt==DOWN)
 		{
-			ball_pos_y++;
-		}else ball_pos_y--;
+			ball_neu.posy++;
+		}else ball_neu.posy--;
 	}
 	//x-movement ball
 	ball_speed_x_counter++;
@@ -87,8 +96,8 @@ ISR (TIMER1_COMPA_vect)
 		//ball_refresh=EIN;
 		if(ball_horiz_richt==RIGHT)
 		{
-			ball_pos_x++;
-		}else ball_pos_x--;
+			ball_neu.posx++;
+		}else ball_neu.posx--;
 	}
 		
 	if(ms10==10)	//10ms
@@ -286,12 +295,12 @@ int main(void)
 	glcd_write();
 	
 	balk_lenght=16;//lenght of balken
-	ball_pos_y = 20;//mittelpunkt ball startposition
+	
 	balken_pos_x = 8;//linke seite balken startposition
-	ball_vert_richt = DOWN; //0=down 1=up
+	ball_vert_richt = UP; //0=down 1=up
 	ball_horiz_richt = LEFT; 
 	balk_horiz_richt=0;//0=left to right, 1=right to left
-	ball_speed_y=3;
+	ball_speed_y=0;
 	ball_speed_x=0;
 	ball_speed_y_counter=0;
 	
@@ -299,10 +308,12 @@ int main(void)
 	balk_end_left=balken_pos_x;
 	balk_end_right=balken_pos_x+balk_lenght;
 	balk_lenght=16;//lenght of balken
-	ball_pos_x=17;
+	ball_neu.posx=balken_pos_x+(balk_lenght/2);
+	ball_neu.posy = balk_vert_pos-ball_radius;//mittelpunkt ball startposition
 	ball_radius=4;
 	ball_refresh=EIN;
 	balk_refresh=EIN;
+	start=1;//Start of new game
 	// Display
 	glcd_tiny_set_font(Font5x7,5,7,32,127);
 	glcd_clear_buffer();
@@ -311,7 +322,7 @@ int main(void)
 	while(1) 
 	{
 		
-		block1(ball_pos_x, ball_pos_y);
+		block1(ball_neu.posx, ball_neu.posy);
 		
 		
 		
@@ -329,21 +340,29 @@ int main(void)
 			balk_horiz_richt=1;
 			balk_refresh=EIN;
 		}
+		
+		if(T_GREEN)//move left
+		{
+			entprell=RELOAD_ENTPRELL;
+			ball_speed_y=3;
+			start=0;
+			
+		}
 		//Balken Endpunkte neu berechnen
 		balk_end_left=balken_pos_x;
 		balk_end_right=balken_pos_x+balk_lenght;
 		
 		
-		if(ball_pos_y==4)ball_vert_richt=DOWN;//reached top screen border
+		if(ball_neu.posy==4)ball_vert_richt=DOWN;//reached top screen border
 		
-		if((ball_pos_y==42)&&((ball_pos_x+ball_radius)>balk_end_left)&&((ball_pos_x-ball_radius)<balk_end_right))
+		if((ball_neu.posy==42)&&((ball_neu.posx+ball_radius)>balk_end_left)&&((ball_neu.posx-ball_radius)<balk_end_right))
 		{
 			ball_vert_richt=UP;
-			if((ball_pos_x+ball_radius)<(balk_end_left+5))
+			if((ball_neu.posx+ball_radius)<(balk_end_left+5))
 			{
 				ball_speed_x=6;
 				ball_horiz_richt=LEFT;
-			}else	if((ball_pos_x-ball_radius)>balk_end_left+10)
+			}else	if((ball_neu.posx-ball_radius)>balk_end_left+10)
 					{
 						ball_speed_x=6;
 						ball_horiz_richt=RIGHT;
@@ -352,11 +371,23 @@ int main(void)
 			
 		}
 		
-		if(ball_pos_x-ball_radius==0)ball_horiz_richt=RIGHT;
-		if(ball_pos_x+ball_radius==84)ball_horiz_richt=LEFT;
+		if(ball_neu.posx-ball_radius==0)ball_horiz_richt=RIGHT;
+		if(ball_neu.posx+ball_radius==84)ball_horiz_richt=LEFT;
+		
+		if(start==1)
+		{
+			
+			ball_alt=ball_neu;
+			ball_refresh=EIN;
+			balk_refresh=EIN;
+			ball_neu.posx=balken_pos_x+(balk_lenght/2);
+			ball_neu.posy = balk_vert_pos-ball_radius;//mittelpunkt ball startposition
+			//sprintf(buffer, "pos=%.d",test);
+			//glcd_draw_string_xy(20, 10, buffer);
+		}
 		
 		/*
-		sprintf(buffer, "b_pos_x=%d", ball_pos_y);
+		sprintf(buffer, "b_pos_x=%d", ball_neu.posy);
 		glcd_draw_string_xy(10, 0, buffer);
 		
 		sprintf(buffer, "end_left=%.d", balk_end_left);
@@ -375,9 +406,10 @@ int main(void)
 				//delete old ball draw new one
 				if(ball_vert_richt==DOWN)
 				{
-					glcd_draw_circle(ball_pos_x, ball_pos_y-1, ball_radius, WHITE);
-					glcd_draw_circle(ball_pos_x, ball_pos_y, ball_radius, BLACK);
-				}else glcd_draw_circle(ball_pos_x, ball_pos_y+1, ball_radius, WHITE);glcd_draw_circle(ball_pos_x, ball_pos_y, ball_radius, BLACK);
+					glcd_draw_circle(ball_alt.posx, ball_alt.posy, ball_radius, WHITE);
+					glcd_draw_circle(ball_neu.posx, ball_neu.posy, ball_radius, BLACK);
+				}else glcd_draw_circle(ball_alt.posx, ball_alt.posy, ball_radius, WHITE);glcd_draw_circle(ball_neu.posx, ball_neu.posy, ball_radius, BLACK);
+			ball_alt=ball_neu;
 			}
 			
 			if(balk_refresh==EIN)//only draw balk when position changed
