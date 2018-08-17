@@ -1,10 +1,15 @@
 /*
 
-	Demo of glcd library with AVR8 microcontroller
-	
-	Tested on a custom made PCB (intended for another project)
-
-	See ../README.md for connection details
+	Arkanoid
+	* 
+	* R.Groener
+	* 
+	* Offene Punkte:
+	* 
+	* -Block seitendetktierung funktioniert noch nicht
+	* -
+	* -
+	* 
 
 */
 
@@ -20,7 +25,7 @@
 
 
 
-#define F_CPU 16000000UL  // 1 MHz
+//#define F_CPU 8000000UL  // 1 MHz
 
 #define T_RED !(PIND & (1<<PD5)) && (entprell == 0)
 #define T_BLUE !(PIND & (1<<PD6)) && (entprell == 0)
@@ -39,15 +44,19 @@
 #define EIN 1
 #define AUS 0
 
-#define BLOCK_BOTTOM (by==(blocky+block_hight+ball_radius))&&((bx>(blockx-ball_radius))&&(bx<blockx+block_lenght+ball_radius))
+#define BLOCK_BOTTOM (by==(blocky+block_hight+ball_radius))&&((bx>(blockx-ball_radius))&&(bx<blockx+block_lenght+ball_radius))//funktioniert
+#define BLOCK_TOP (by==(blocky-ball_radius))&&((bx>(blockx-ball_radius))&&(bx<blockx+block_lenght+ball_radius))//funktioniert
+#define BLOCK_SIDE (((by+ball_radius)>=blocky)&&((by-ball_radius)<=(blocky+block_hight)))&&(((bx+ball_radius)==blockx)||((bx-ball_radius)==blockx+block_lenght))
 
-//	  L1     M    R1
-//	|=====|=====|=====|
+//	  L3     L2    L1    R1    R2    R3
+//	|=====|=====|=====|=====|=====|=====|
 //
-#define BALK_ZONE_L1 ball_neu.posx < (balk_end_left+5)											
-#define BALK_ZONE_M (ball_neu.posx > (balk_end_left+5))&&(ball_neu.posx < (balk_end_left+10))	
-#define BALK_ZONE_R1 (ball_neu.posx > (balk_end_left+10))&&(ball_neu.posx < (balk_end_right))	
-#define BALKEN (ball_neu.posy==42)&&((balk_end_left < (ball_neu.posx+ball_radius)))&&(balk_end_right>(ball_neu.posx+ball_radius))//Balken P
+#define ZONE_L3 ball_neu.posx<(balk_end_left+zone_size)
+#define ZONE_L2 (ball_neu.posx>(balk_end_left+zone_size))&&(ball_neu.posx<(balk_end_left+(2*zone_size)))
+#define ZONE_L1 (ball_neu.posx>(balk_end_left+(2*zone_size)))&&(ball_neu.posx<(balk_end_left+(3*zone_size)))
+#define ZONE_R1 (ball_neu.posx>(balk_end_left+(3*zone_size)))&&(ball_neu.posx<(balk_end_left+(4*zone_size)))
+#define ZONE_R2 (ball_neu.posx>(balk_end_left+(4*zone_size)))&&(ball_neu.posx<(balk_end_left+(5*zone_size)))
+#define ZONE_R3 ball_neu.posx>balk_end_left+(5*zone_size)
 /* Function prototypes */
 static void setup(void);
 char buffer[20]={};
@@ -61,7 +70,7 @@ uint8_t ms, ms10,ms100,sec,min,entprell, state;
 
 volatile uint8_t balken_pos_x, ball_vert_richt, ball_horiz_richt, balk_horiz_richt, ball_refresh, balk_refresh;
 volatile uint8_t ball_speed_y, ball_speed_x, ball_speed_y_counter,ball_speed_x_counter, start;
-uint8_t balk_vert_pos, balk_end_left, balk_end_right, balk_lenght, ball_radius;
+uint8_t balk_vert_pos, balk_end_left, balk_end_right, balk_lenght, ball_radius,zone_size;
 
 uint8_t test=0;
 
@@ -232,9 +241,10 @@ void block1(uint8_t bx, uint8_t by)
 {
 	static uint8_t aktiv=1;
 	const uint8_t blockx=10;
-	const uint8_t blocky=0;
+	const uint8_t blocky=1;
 	const uint8_t block_lenght=20;
 	const uint8_t block_hight=5;
+	
 	
 	if(aktiv==1)//noch nie getroffen
 	{
@@ -247,12 +257,25 @@ void block1(uint8_t bx, uint8_t by)
 				aktiv=0;//block verbraucht weil getroffen
 				glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
 			}
-		}else 	if(1)
+		}else 	if(BLOCK_TOP)
 				{
+					ball_vert_richt=UP;
+					aktiv=0;//block verbraucht weil getroffen
+					glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+				}	
+		if(BLOCK_SIDE)
+		{
+			if(ball_horiz_richt==LEFT)
+			{
+				ball_horiz_richt=RIGHT;
+				
+				glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+			}else 	ball_horiz_richt=LEFT;
 					
-				}
-		
-		
+			
+			aktiv=0;//block verbraucht weil getroffen
+			glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+		}
 	}
 	
 	
@@ -305,9 +328,10 @@ int main(void)
 	ball_speed_y_counter=0;
 	
 	balk_vert_pos=46; //Startposition bottom of screen
+	zone_size=5;
+	balk_lenght=6*zone_size;//lenght of balken
 	balk_end_left=balken_pos_x;
 	balk_end_right=balken_pos_x+balk_lenght;
-	balk_lenght=16;//lenght of balken
 	ball_neu.posx=balken_pos_x+(balk_lenght/2);
 	ball_neu.posy = balk_vert_pos-ball_radius;//mittelpunkt ball startposition
 	ball_radius=4;
@@ -340,13 +364,11 @@ int main(void)
 			balk_horiz_richt=RIGHT;
 			balk_refresh=EIN;
 		}
-		
 		if(T_GREEN)//move left
 		{
 			entprell=RELOAD_ENTPRELL;
-			ball_speed_y=3;
+			ball_speed_y=6;
 			start=0;
-			
 		}
 		//Balken Endpunkte neu berechnen
 		balk_end_left=balken_pos_x;
@@ -360,16 +382,32 @@ int main(void)
 		{
 			ball_vert_richt=UP;
 			balk_refresh=EIN;
-			if((ball_neu.posx+ball_radius)<(balk_end_left+5))
+			if(ZONE_L3)
 			{
-				ball_speed_x=6;
+				ball_speed_x=2;
 				ball_horiz_richt=LEFT;
-			}else	if((ball_neu.posx-ball_radius)>balk_end_left+10)
+			}else	if(ZONE_L2)
 					{
-						ball_speed_x=6;
-						ball_horiz_richt=RIGHT;
-					}else ball_speed_x=0;
-			
+						ball_speed_x=4;
+							ball_horiz_richt=LEFT;
+					}else	if(ZONE_L1)
+						{
+							ball_speed_x=8;
+								ball_horiz_richt=LEFT;
+						}else	if(ZONE_R1)
+								{
+									ball_speed_x=8;
+									ball_horiz_richt=RIGHT;
+								}else	if(ZONE_R2)
+										{
+											ball_speed_x=4;
+											ball_horiz_richt=RIGHT;
+										}else	if(ZONE_R3)
+												{
+													ball_speed_x=2;
+													ball_horiz_richt=RIGHT;
+												}
+					
 			
 		}else
 		
@@ -417,9 +455,9 @@ int main(void)
 				//delete old plank draw new one
 				if(balk_horiz_richt==LEFT)
 				{
-					glcd_draw_rect(balken_pos_x-1, balk_vert_pos, 16, 2, WHITE);
-					glcd_draw_rect(balken_pos_x, balk_vert_pos, 16, 2, BLACK);
-				}else glcd_draw_rect(balken_pos_x+1, balk_vert_pos, 16, 2, WHITE);glcd_draw_rect(balken_pos_x, balk_vert_pos, 16, 2, BLACK);
+					glcd_draw_rect(balken_pos_x-1, balk_vert_pos, balk_lenght, 2, WHITE);
+					glcd_draw_rect(balken_pos_x, balk_vert_pos, balk_lenght, 2, BLACK);
+				}else glcd_draw_rect(balken_pos_x+1, balk_vert_pos, balk_lenght, 2, WHITE);glcd_draw_rect(balken_pos_x, balk_vert_pos, balk_lenght, 2, BLACK);
 			}
 			glcd_write();
 		}
