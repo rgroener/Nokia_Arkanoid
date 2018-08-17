@@ -239,7 +239,7 @@ void block1(uint8_t bx, uint8_t by)
 {
 	static uint8_t aktiv=1;
 	const uint8_t blockx=0;
-	const uint8_t blocky=1;
+	const uint8_t blocky=0;
 	const uint8_t block_lenght=12;
 	const uint8_t block_hight=5;
 	
@@ -276,7 +276,7 @@ void block2(uint8_t bx, uint8_t by)
 {
 	static uint8_t aktiv=1;
 	const uint8_t blockx=12;
-	const uint8_t blocky=1;
+	const uint8_t blocky=0;
 	const uint8_t block_lenght=12;
 	const uint8_t block_hight=5;
 	
@@ -313,7 +313,7 @@ void block3(uint8_t bx, uint8_t by)
 {
 	static uint8_t aktiv=1;
 	const uint8_t blockx=24;
-	const uint8_t blocky=1;
+	const uint8_t blocky=0;
 	const uint8_t block_lenght=12;
 	const uint8_t block_hight=5;
 	
@@ -350,7 +350,7 @@ void block4(uint8_t bx, uint8_t by)
 {
 	static uint8_t aktiv=1;
 	const uint8_t blockx=36;
-	const uint8_t blocky=1;
+	const uint8_t blocky=0;
 	const uint8_t block_lenght=12;
 	const uint8_t block_hight=5;
 	
@@ -387,7 +387,7 @@ void block5(uint8_t bx, uint8_t by)
 {
 	static uint8_t aktiv=1;
 	const uint8_t blockx=48;
-	const uint8_t blocky=1;
+	const uint8_t blocky=0;
 	const uint8_t block_lenght=12;
 	const uint8_t block_hight=5;
 	
@@ -424,7 +424,7 @@ void block6(uint8_t bx, uint8_t by)
 {
 	static uint8_t aktiv=1;
 	const uint8_t blockx=60;
-	const uint8_t blocky=1;
+	const uint8_t blocky=0;
 	const uint8_t block_lenght=12;
 	const uint8_t block_hight=5;
 	
@@ -461,7 +461,232 @@ void block7(uint8_t bx, uint8_t by)
 {
 	static uint8_t aktiv=1;
 	const uint8_t blockx=72;
-	const uint8_t blocky=1;
+	const uint8_t blocky=0;
+	const uint8_t block_lenght=12;
+	const uint8_t block_hight=5;
+	
+	
+	if(aktiv==1)//noch nie getroffen
+	{
+		glcd_draw_rect(blockx, blocky, block_lenght, block_hight, BLACK);
+		if(ball_vert_richt==UP)//block hit from the bottom?
+		{
+			if(BLOCK_BOTTOM)
+			{
+				ball_vert_richt=DOWN;
+				aktiv=0;//block verbraucht weil getroffen
+				glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+			}
+		}else 	if(BLOCK_TOP)
+				{
+					ball_vert_richt=UP;
+					aktiv=0;//block verbraucht weil getroffen
+					glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+				}	
+		if(BLOCK_SIDE)
+		{
+			if(ball_horiz_richt==LEFT)
+			{
+				ball_horiz_richt=RIGHT;
+			}else 	ball_horiz_richt=LEFT;
+			aktiv=0;//block verbraucht weil getroffen, egal von welcher seite
+			glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+		}
+	}
+}//eof Block
+
+//*******************************************
+
+void block8(uint8_t bx, uint8_t by)
+{
+	static uint8_t aktiv=1;
+	const uint8_t blockx=6;
+	const uint8_t blocky=5;
+	const uint8_t block_lenght=12;
+	const uint8_t block_hight=5;
+	
+	
+	if(aktiv==1)//noch nie getroffen
+	{
+		glcd_draw_rect(blockx, blocky, block_lenght, block_hight, BLACK);
+		if(ball_vert_richt==UP)//block hit from the bottom?
+		{
+			if(BLOCK_BOTTOM)
+			{
+				ball_vert_richt=DOWN;
+				aktiv=0;//block verbraucht weil getroffen
+				glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+			}
+		}else 	if(BLOCK_TOP)
+				{
+					ball_vert_richt=UP;
+					aktiv=0;//block verbraucht weil getroffen
+					glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+				}	
+		if(BLOCK_SIDE)
+		{
+			if(ball_horiz_richt==LEFT)
+			{
+				ball_horiz_richt=RIGHT;
+			}else 	ball_horiz_richt=LEFT;
+			aktiv=0;//block verbraucht weil getroffen, egal von welcher seite
+			glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+		}
+	}
+}//eof Block
+void block9(uint8_t bx, uint8_t by)
+{
+	static uint8_t aktiv=1;
+	const uint8_t blockx=17;
+	const uint8_t blocky=5;
+	const uint8_t block_lenght=12;
+	const uint8_t block_hight=5;
+	
+	
+	if(aktiv==1)//noch nie getroffen
+	{
+		glcd_draw_rect(blockx, blocky, block_lenght, block_hight, BLACK);
+		if(ball_vert_richt==UP)//block hit from the bottom?
+		{
+			if(BLOCK_BOTTOM)
+			{
+				ball_vert_richt=DOWN;
+				aktiv=0;//block verbraucht weil getroffen
+				glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+			}
+		}else 	if(BLOCK_TOP)
+				{
+					ball_vert_richt=UP;
+					aktiv=0;//block verbraucht weil getroffen
+					glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+				}	
+		if(BLOCK_SIDE)
+		{
+			if(ball_horiz_richt==LEFT)
+			{
+				ball_horiz_richt=RIGHT;
+			}else 	ball_horiz_richt=LEFT;
+			aktiv=0;//block verbraucht weil getroffen, egal von welcher seite
+			glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+		}
+	}
+}//eof Block
+void block10(uint8_t bx, uint8_t by)
+{
+	static uint8_t aktiv=1;
+	const uint8_t blockx=29;
+	const uint8_t blocky=5;
+	const uint8_t block_lenght=12;
+	const uint8_t block_hight=5;
+	
+	
+	if(aktiv==1)//noch nie getroffen
+	{
+		glcd_draw_rect(blockx, blocky, block_lenght, block_hight, BLACK);
+		if(ball_vert_richt==UP)//block hit from the bottom?
+		{
+			if(BLOCK_BOTTOM)
+			{
+				ball_vert_richt=DOWN;
+				aktiv=0;//block verbraucht weil getroffen
+				glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+			}
+		}else 	if(BLOCK_TOP)
+				{
+					ball_vert_richt=UP;
+					aktiv=0;//block verbraucht weil getroffen
+					glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+				}	
+		if(BLOCK_SIDE)
+		{
+			if(ball_horiz_richt==LEFT)
+			{
+				ball_horiz_richt=RIGHT;
+			}else 	ball_horiz_richt=LEFT;
+			aktiv=0;//block verbraucht weil getroffen, egal von welcher seite
+			glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+		}
+	}
+}//eof Block
+void block11(uint8_t bx, uint8_t by)
+{
+	static uint8_t aktiv=1;
+	const uint8_t blockx=41;
+	const uint8_t blocky=5;
+	const uint8_t block_lenght=12;
+	const uint8_t block_hight=5;
+	
+	
+	if(aktiv==1)//noch nie getroffen
+	{
+		glcd_draw_rect(blockx, blocky, block_lenght, block_hight, BLACK);
+		if(ball_vert_richt==UP)//block hit from the bottom?
+		{
+			if(BLOCK_BOTTOM)
+			{
+				ball_vert_richt=DOWN;
+				aktiv=0;//block verbraucht weil getroffen
+				glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+			}
+		}else 	if(BLOCK_TOP)
+				{
+					ball_vert_richt=UP;
+					aktiv=0;//block verbraucht weil getroffen
+					glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+				}	
+		if(BLOCK_SIDE)
+		{
+			if(ball_horiz_richt==LEFT)
+			{
+				ball_horiz_richt=RIGHT;
+			}else 	ball_horiz_richt=LEFT;
+			aktiv=0;//block verbraucht weil getroffen, egal von welcher seite
+			glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+		}
+	}
+}//eof Block
+void block12(uint8_t bx, uint8_t by)
+{
+	static uint8_t aktiv=1;
+	const uint8_t blockx=53;
+	const uint8_t blocky=5;
+	const uint8_t block_lenght=12;
+	const uint8_t block_hight=5;
+	
+	
+	if(aktiv==1)//noch nie getroffen
+	{
+		glcd_draw_rect(blockx, blocky, block_lenght, block_hight, BLACK);
+		if(ball_vert_richt==UP)//block hit from the bottom?
+		{
+			if(BLOCK_BOTTOM)
+			{
+				ball_vert_richt=DOWN;
+				aktiv=0;//block verbraucht weil getroffen
+				glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+			}
+		}else 	if(BLOCK_TOP)
+				{
+					ball_vert_richt=UP;
+					aktiv=0;//block verbraucht weil getroffen
+					glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+				}	
+		if(BLOCK_SIDE)
+		{
+			if(ball_horiz_richt==LEFT)
+			{
+				ball_horiz_richt=RIGHT;
+			}else 	ball_horiz_richt=LEFT;
+			aktiv=0;//block verbraucht weil getroffen, egal von welcher seite
+			glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+		}
+	}
+}//eof Block
+void block13(uint8_t bx, uint8_t by)
+{
+	static uint8_t aktiv=1;
+	const uint8_t blockx=65;
+	const uint8_t blocky=5;
 	const uint8_t block_lenght=12;
 	const uint8_t block_hight=5;
 	
@@ -567,6 +792,13 @@ int main(void)
 		block5(ball_neu.posx, ball_neu.posy);
 		block6(ball_neu.posx, ball_neu.posy);
 		block7(ball_neu.posx, ball_neu.posy);
+		
+		block8(ball_neu.posx, ball_neu.posy);
+		block9(ball_neu.posx, ball_neu.posy);
+		block10(ball_neu.posx, ball_neu.posy);
+		block11(ball_neu.posx, ball_neu.posy);
+		block12(ball_neu.posx, ball_neu.posy);
+		block13(ball_neu.posx, ball_neu.posy);
 		
 		if(T_RED)//move right
 		{
