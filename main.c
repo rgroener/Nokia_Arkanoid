@@ -43,10 +43,26 @@
 
 #define EIN 1
 #define AUS 0
+//===================BlkNr, XPos, YPos
+#define __BLOCK_A_1__ 1,0,0
+#define __BLOCK_A_2__ 2,12,0
+#define __BLOCK_A_3__ 3,24,0
+#define __BLOCK_A_4__ 4,36,0
+#define __BLOCK_A_5__ 5,48,0
+#define __BLOCK_A_6__ 6,60,0
+#define __BLOCK_A_7__ 7,72,0
 
-#define BLOCK_BOTTOM (by==(blocky+block_hight+ball_radius))&&((bx>(blockx-ball_radius))&&(bx<blockx+block_lenght+ball_radius))//funktioniert
-#define BLOCK_TOP (by==(blocky-ball_radius))&&((bx>(blockx-ball_radius))&&(bx<blockx+block_lenght+ball_radius))//funktioniert
-#define BLOCK_SIDE (((by+ball_radius)>=blocky)&&((by-ball_radius)<=(blocky+block_hight)))&&(((bx+ball_radius)==blockx)||((bx-ball_radius)==blockx+block_lenght))
+#define __BLOCK_B_15__ 8,12,25
+#define __BLOCK_B_25__ 9,24,25
+#define __BLOCK_B_35__ 10,36,25
+#define __BLOCK_B_45__ 11,48,25
+#define __BLOCK_B_55__ 12,60,25
+
+
+
+#define BLOCK_BOTTOM (by==(block[blocknr][3]+block[blocknr][5]+ball_radius))&&((bx>(block[blocknr][2]-ball_radius))&&(bx<block[blocknr][2]+block[blocknr][4]+ball_radius))//funktioniert
+#define BLOCK_TOP (by==(block[blocknr][3]-ball_radius))&&((bx>(block[blocknr][2]-ball_radius))&&(bx<block[blocknr][2]+block[blocknr][4]+ball_radius))//funktioniert
+#define BLOCK_SIDE (((by+ball_radius)>=block[blocknr][3])&&((by-ball_radius)<=(block[blocknr][3]+block[blocknr][5])))&&(((bx+ball_radius)==block[blocknr][2])||((bx-ball_radius)==block[blocknr][2]+block[blocknr][4]))//funktioniert
 
 //	  L3     L2    L1    R1    R2    R3
 //	|=====|=====|=====|=====|=====|=====|
@@ -235,31 +251,51 @@ const unsigned char batman[] PROGMEM=
 	0x00, 0x00, 0x00, 0x00
 	
 	};
-void block1(uint8_t bx, uint8_t by)
+void block(uint8_t blocknr, uint8_t blockposx, uint8_t blockposy,uint8_t bx, uint8_t by, uint8_t fix)
 {
-	static uint8_t aktiv=1;
-	const uint8_t blockx=0;
-	const uint8_t blocky=0;
-	const uint8_t block_lenght=12;
-	const uint8_t block_hight=5;
+	/*Weitere Blocks können aufgerufen werden mittels Makro, wobei der erste Übergabewert die Nummer des Blocks darstellt*/
 	
+	//Array wird initialisiert um "aktiv" nur bei erstem Aufruf zu setzen
+	static uint8_t block[28][7]={	{0,1,0,0,0,0,0}, {0,1,0,0,0,0,0}, {0,1,0,0,0,0,0}, {0,1,0,0,0,0,0},
+									{0,1,0,0,0,0,0}, {0,1,0,0,0,0,0}, {0,1,0,0,0,0,0}, {0,1,0,0,0,0,0},
+									{0,1,0,0,0,0,0}, {0,1,0,0,0,0,0}, {0,1,0,0,0,0,0}, {0,1,0,0,0,0,0},
+									{0,1,0,0,0,0,0}, {0,1,0,0,0,0,0}, {0,1,0,0,0,0,0}, {0,1,0,0,0,0,0},
+									{0,1,0,0,0,0,0}, {0,1,0,0,0,0,0}, {0,1,0,0,0,0,0}, {0,1,0,0,0,0,0},
+									{0,1,0,0,0,0,0}, {0,1,0,0,0,0,0}, {0,1,0,0,0,0,0}, {0,1,0,0,0,0,0}};
 	
-	if(aktiv==1)//noch nie getroffen
+	block[blocknr][0]=blocknr;		//Block active
+	block[blocknr][6]=fix;		//1=fix, 
+	block[blocknr][2]=blockposx;//block position x axis
+	block[blocknr][3]=blockposy;//block position y axis
+	block[blocknr][4]=12;		//block lenght
+	block[blocknr][5]=5;		//block hight
+	
+	if(block[blocknr][1]==1)//noch nie getroffen
 	{
-		glcd_draw_rect(blockx, blocky, block_lenght, block_hight, BLACK);
+		if(fix==1)//block is fix
+		{
+			glcd_fill_rect(block[blocknr][2], block[blocknr][3], block[blocknr][4], block[blocknr][5], BLACK);
+		}else glcd_draw_rect(block[blocknr][2], block[blocknr][3], block[blocknr][4], block[blocknr][5], BLACK);
+		
 		if(ball_vert_richt==UP)//block hit from the bottom?
 		{
 			if(BLOCK_BOTTOM)
 			{
 				ball_vert_richt=DOWN;
-				aktiv=0;//block verbraucht weil getroffen
-				glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+				if(block[blocknr][6]==0)//only clear block when not fix
+				{
+					block[blocknr][1]=0;//block verbraucht weil getroffen
+					glcd_fill_rect(block[blocknr][2], block[blocknr][3], block[blocknr][4], block[blocknr][5], WHITE);
+				}
 			}
 		}else 	if(BLOCK_TOP)
 				{
 					ball_vert_richt=UP;
-					aktiv=0;//block verbraucht weil getroffen
-					glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+					if(block[blocknr][6]==0)//only clear block when not fix
+					{
+						block[blocknr][1]=0;//block verbraucht weil getroffen
+						glcd_fill_rect(block[blocknr][2], block[blocknr][3], block[blocknr][4], block[blocknr][5], WHITE);
+					}
 				}	
 		if(BLOCK_SIDE)
 		{
@@ -267,455 +303,11 @@ void block1(uint8_t bx, uint8_t by)
 			{
 				ball_horiz_richt=RIGHT;
 			}else 	ball_horiz_richt=LEFT;
-			aktiv=0;//block verbraucht weil getroffen, egal von welcher seite
-			glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-		}
-	}
-}//eof Block
-void block2(uint8_t bx, uint8_t by)
-{
-	static uint8_t aktiv=1;
-	const uint8_t blockx=12;
-	const uint8_t blocky=0;
-	const uint8_t block_lenght=12;
-	const uint8_t block_hight=5;
-	
-	
-	if(aktiv==1)//noch nie getroffen
-	{
-		glcd_draw_rect(blockx, blocky, block_lenght, block_hight, BLACK);
-		if(ball_vert_richt==UP)//block hit from the bottom?
-		{
-			if(BLOCK_BOTTOM)
+			if(block[blocknr][6]==0)//only clear block when not fix
 			{
-				ball_vert_richt=DOWN;
-				aktiv=0;//block verbraucht weil getroffen
-				glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
+				block[blocknr][1]=0;//block verbraucht weil getroffen, egal von welcher seite
+				glcd_fill_rect(block[blocknr][2], block[blocknr][3], block[blocknr][4], block[blocknr][5], WHITE);
 			}
-		}else 	if(BLOCK_TOP)
-				{
-					ball_vert_richt=UP;
-					aktiv=0;//block verbraucht weil getroffen
-					glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-				}	
-		if(BLOCK_SIDE)
-		{
-			if(ball_horiz_richt==LEFT)
-			{
-				ball_horiz_richt=RIGHT;
-			}else 	ball_horiz_richt=LEFT;
-			aktiv=0;//block verbraucht weil getroffen, egal von welcher seite
-			glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-		}
-	}
-}//eof Block
-void block3(uint8_t bx, uint8_t by)
-{
-	static uint8_t aktiv=1;
-	const uint8_t blockx=24;
-	const uint8_t blocky=0;
-	const uint8_t block_lenght=12;
-	const uint8_t block_hight=5;
-	
-	
-	if(aktiv==1)//noch nie getroffen
-	{
-		glcd_draw_rect(blockx, blocky, block_lenght, block_hight, BLACK);
-		if(ball_vert_richt==UP)//block hit from the bottom?
-		{
-			if(BLOCK_BOTTOM)
-			{
-				ball_vert_richt=DOWN;
-				aktiv=0;//block verbraucht weil getroffen
-				glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-			}
-		}else 	if(BLOCK_TOP)
-				{
-					ball_vert_richt=UP;
-					aktiv=0;//block verbraucht weil getroffen
-					glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-				}	
-		if(BLOCK_SIDE)
-		{
-			if(ball_horiz_richt==LEFT)
-			{
-				ball_horiz_richt=RIGHT;
-			}else 	ball_horiz_richt=LEFT;
-			aktiv=0;//block verbraucht weil getroffen, egal von welcher seite
-			glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-		}
-	}
-}//eof Block
-void block4(uint8_t bx, uint8_t by)
-{
-	static uint8_t aktiv=1;
-	const uint8_t blockx=36;
-	const uint8_t blocky=0;
-	const uint8_t block_lenght=12;
-	const uint8_t block_hight=5;
-	
-	
-	if(aktiv==1)//noch nie getroffen
-	{
-		glcd_draw_rect(blockx, blocky, block_lenght, block_hight, BLACK);
-		if(ball_vert_richt==UP)//block hit from the bottom?
-		{
-			if(BLOCK_BOTTOM)
-			{
-				ball_vert_richt=DOWN;
-				aktiv=0;//block verbraucht weil getroffen
-				glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-			}
-		}else 	if(BLOCK_TOP)
-				{
-					ball_vert_richt=UP;
-					aktiv=0;//block verbraucht weil getroffen
-					glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-				}	
-		if(BLOCK_SIDE)
-		{
-			if(ball_horiz_richt==LEFT)
-			{
-				ball_horiz_richt=RIGHT;
-			}else 	ball_horiz_richt=LEFT;
-			aktiv=0;//block verbraucht weil getroffen, egal von welcher seite
-			glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-		}
-	}
-}//eof Block
-void block5(uint8_t bx, uint8_t by)
-{
-	static uint8_t aktiv=1;
-	const uint8_t blockx=48;
-	const uint8_t blocky=0;
-	const uint8_t block_lenght=12;
-	const uint8_t block_hight=5;
-	
-	
-	if(aktiv==1)//noch nie getroffen
-	{
-		glcd_draw_rect(blockx, blocky, block_lenght, block_hight, BLACK);
-		if(ball_vert_richt==UP)//block hit from the bottom?
-		{
-			if(BLOCK_BOTTOM)
-			{
-				ball_vert_richt=DOWN;
-				aktiv=0;//block verbraucht weil getroffen
-				glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-			}
-		}else 	if(BLOCK_TOP)
-				{
-					ball_vert_richt=UP;
-					aktiv=0;//block verbraucht weil getroffen
-					glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-				}	
-		if(BLOCK_SIDE)
-		{
-			if(ball_horiz_richt==LEFT)
-			{
-				ball_horiz_richt=RIGHT;
-			}else 	ball_horiz_richt=LEFT;
-			aktiv=0;//block verbraucht weil getroffen, egal von welcher seite
-			glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-		}
-	}
-}//eof Block
-void block6(uint8_t bx, uint8_t by)
-{
-	static uint8_t aktiv=1;
-	const uint8_t blockx=60;
-	const uint8_t blocky=0;
-	const uint8_t block_lenght=12;
-	const uint8_t block_hight=5;
-	
-	
-	if(aktiv==1)//noch nie getroffen
-	{
-		glcd_draw_rect(blockx, blocky, block_lenght, block_hight, BLACK);
-		if(ball_vert_richt==UP)//block hit from the bottom?
-		{
-			if(BLOCK_BOTTOM)
-			{
-				ball_vert_richt=DOWN;
-				aktiv=0;//block verbraucht weil getroffen
-				glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-			}
-		}else 	if(BLOCK_TOP)
-				{
-					ball_vert_richt=UP;
-					aktiv=0;//block verbraucht weil getroffen
-					glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-				}	
-		if(BLOCK_SIDE)
-		{
-			if(ball_horiz_richt==LEFT)
-			{
-				ball_horiz_richt=RIGHT;
-			}else 	ball_horiz_richt=LEFT;
-			aktiv=0;//block verbraucht weil getroffen, egal von welcher seite
-			glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-		}
-	}
-}//eof Block
-void block7(uint8_t bx, uint8_t by)
-{
-	static uint8_t aktiv=1;
-	const uint8_t blockx=72;
-	const uint8_t blocky=0;
-	const uint8_t block_lenght=12;
-	const uint8_t block_hight=5;
-	
-	
-	if(aktiv==1)//noch nie getroffen
-	{
-		glcd_draw_rect(blockx, blocky, block_lenght, block_hight, BLACK);
-		if(ball_vert_richt==UP)//block hit from the bottom?
-		{
-			if(BLOCK_BOTTOM)
-			{
-				ball_vert_richt=DOWN;
-				aktiv=0;//block verbraucht weil getroffen
-				glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-			}
-		}else 	if(BLOCK_TOP)
-				{
-					ball_vert_richt=UP;
-					aktiv=0;//block verbraucht weil getroffen
-					glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-				}	
-		if(BLOCK_SIDE)
-		{
-			if(ball_horiz_richt==LEFT)
-			{
-				ball_horiz_richt=RIGHT;
-			}else 	ball_horiz_richt=LEFT;
-			aktiv=0;//block verbraucht weil getroffen, egal von welcher seite
-			glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-		}
-	}
-}//eof Block
-
-//*******************************************
-
-void block8(uint8_t bx, uint8_t by)
-{
-	static uint8_t aktiv=1;
-	const uint8_t blockx=6;
-	const uint8_t blocky=5;
-	const uint8_t block_lenght=12;
-	const uint8_t block_hight=5;
-	
-	
-	if(aktiv==1)//noch nie getroffen
-	{
-		glcd_draw_rect(blockx, blocky, block_lenght, block_hight, BLACK);
-		if(ball_vert_richt==UP)//block hit from the bottom?
-		{
-			if(BLOCK_BOTTOM)
-			{
-				ball_vert_richt=DOWN;
-				aktiv=0;//block verbraucht weil getroffen
-				glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-			}
-		}else 	if(BLOCK_TOP)
-				{
-					ball_vert_richt=UP;
-					aktiv=0;//block verbraucht weil getroffen
-					glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-				}	
-		if(BLOCK_SIDE)
-		{
-			if(ball_horiz_richt==LEFT)
-			{
-				ball_horiz_richt=RIGHT;
-			}else 	ball_horiz_richt=LEFT;
-			aktiv=0;//block verbraucht weil getroffen, egal von welcher seite
-			glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-		}
-	}
-}//eof Block
-void block9(uint8_t bx, uint8_t by)
-{
-	static uint8_t aktiv=1;
-	const uint8_t blockx=17;
-	const uint8_t blocky=5;
-	const uint8_t block_lenght=12;
-	const uint8_t block_hight=5;
-	
-	
-	if(aktiv==1)//noch nie getroffen
-	{
-		glcd_draw_rect(blockx, blocky, block_lenght, block_hight, BLACK);
-		if(ball_vert_richt==UP)//block hit from the bottom?
-		{
-			if(BLOCK_BOTTOM)
-			{
-				ball_vert_richt=DOWN;
-				aktiv=0;//block verbraucht weil getroffen
-				glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-			}
-		}else 	if(BLOCK_TOP)
-				{
-					ball_vert_richt=UP;
-					aktiv=0;//block verbraucht weil getroffen
-					glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-				}	
-		if(BLOCK_SIDE)
-		{
-			if(ball_horiz_richt==LEFT)
-			{
-				ball_horiz_richt=RIGHT;
-			}else 	ball_horiz_richt=LEFT;
-			aktiv=0;//block verbraucht weil getroffen, egal von welcher seite
-			glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-		}
-	}
-}//eof Block
-void block10(uint8_t bx, uint8_t by)
-{
-	static uint8_t aktiv=1;
-	const uint8_t blockx=29;
-	const uint8_t blocky=5;
-	const uint8_t block_lenght=12;
-	const uint8_t block_hight=5;
-	
-	
-	if(aktiv==1)//noch nie getroffen
-	{
-		glcd_draw_rect(blockx, blocky, block_lenght, block_hight, BLACK);
-		if(ball_vert_richt==UP)//block hit from the bottom?
-		{
-			if(BLOCK_BOTTOM)
-			{
-				ball_vert_richt=DOWN;
-				aktiv=0;//block verbraucht weil getroffen
-				glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-			}
-		}else 	if(BLOCK_TOP)
-				{
-					ball_vert_richt=UP;
-					aktiv=0;//block verbraucht weil getroffen
-					glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-				}	
-		if(BLOCK_SIDE)
-		{
-			if(ball_horiz_richt==LEFT)
-			{
-				ball_horiz_richt=RIGHT;
-			}else 	ball_horiz_richt=LEFT;
-			aktiv=0;//block verbraucht weil getroffen, egal von welcher seite
-			glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-		}
-	}
-}//eof Block
-void block11(uint8_t bx, uint8_t by)
-{
-	static uint8_t aktiv=1;
-	const uint8_t blockx=41;
-	const uint8_t blocky=5;
-	const uint8_t block_lenght=12;
-	const uint8_t block_hight=5;
-	
-	
-	if(aktiv==1)//noch nie getroffen
-	{
-		glcd_draw_rect(blockx, blocky, block_lenght, block_hight, BLACK);
-		if(ball_vert_richt==UP)//block hit from the bottom?
-		{
-			if(BLOCK_BOTTOM)
-			{
-				ball_vert_richt=DOWN;
-				aktiv=0;//block verbraucht weil getroffen
-				glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-			}
-		}else 	if(BLOCK_TOP)
-				{
-					ball_vert_richt=UP;
-					aktiv=0;//block verbraucht weil getroffen
-					glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-				}	
-		if(BLOCK_SIDE)
-		{
-			if(ball_horiz_richt==LEFT)
-			{
-				ball_horiz_richt=RIGHT;
-			}else 	ball_horiz_richt=LEFT;
-			aktiv=0;//block verbraucht weil getroffen, egal von welcher seite
-			glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-		}
-	}
-}//eof Block
-void block12(uint8_t bx, uint8_t by)
-{
-	static uint8_t aktiv=1;
-	const uint8_t blockx=53;
-	const uint8_t blocky=5;
-	const uint8_t block_lenght=12;
-	const uint8_t block_hight=5;
-	
-	
-	if(aktiv==1)//noch nie getroffen
-	{
-		glcd_draw_rect(blockx, blocky, block_lenght, block_hight, BLACK);
-		if(ball_vert_richt==UP)//block hit from the bottom?
-		{
-			if(BLOCK_BOTTOM)
-			{
-				ball_vert_richt=DOWN;
-				aktiv=0;//block verbraucht weil getroffen
-				glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-			}
-		}else 	if(BLOCK_TOP)
-				{
-					ball_vert_richt=UP;
-					aktiv=0;//block verbraucht weil getroffen
-					glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-				}	
-		if(BLOCK_SIDE)
-		{
-			if(ball_horiz_richt==LEFT)
-			{
-				ball_horiz_richt=RIGHT;
-			}else 	ball_horiz_richt=LEFT;
-			aktiv=0;//block verbraucht weil getroffen, egal von welcher seite
-			glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-		}
-	}
-}//eof Block
-void block13(uint8_t bx, uint8_t by)
-{
-	static uint8_t aktiv=1;
-	const uint8_t blockx=65;
-	const uint8_t blocky=5;
-	const uint8_t block_lenght=12;
-	const uint8_t block_hight=5;
-	
-	
-	if(aktiv==1)//noch nie getroffen
-	{
-		glcd_draw_rect(blockx, blocky, block_lenght, block_hight, BLACK);
-		if(ball_vert_richt==UP)//block hit from the bottom?
-		{
-			if(BLOCK_BOTTOM)
-			{
-				ball_vert_richt=DOWN;
-				aktiv=0;//block verbraucht weil getroffen
-				glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-			}
-		}else 	if(BLOCK_TOP)
-				{
-					ball_vert_richt=UP;
-					aktiv=0;//block verbraucht weil getroffen
-					glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
-				}	
-		if(BLOCK_SIDE)
-		{
-			if(ball_horiz_richt==LEFT)
-			{
-				ball_horiz_richt=RIGHT;
-			}else 	ball_horiz_richt=LEFT;
-			aktiv=0;//block verbraucht weil getroffen, egal von welcher seite
-			glcd_draw_rect(blockx, blocky, block_lenght, block_hight, WHITE);
 		}
 	}
 }//eof Block
@@ -785,20 +377,21 @@ int main(void)
 	while(1) 
 	{
 		
-		block1(ball_neu.posx, ball_neu.posy);
-		block2(ball_neu.posx, ball_neu.posy);
-		block3(ball_neu.posx, ball_neu.posy);
-		block4(ball_neu.posx, ball_neu.posy);
-		block5(ball_neu.posx, ball_neu.posy);
-		block6(ball_neu.posx, ball_neu.posy);
-		block7(ball_neu.posx, ball_neu.posy);
+		block(__BLOCK_A_1__,ball_neu.posx, ball_neu.posy,0);
+		block(__BLOCK_A_2__,ball_neu.posx, ball_neu.posy,1);
+		block(__BLOCK_A_3__,ball_neu.posx, ball_neu.posy,0);
+		block(__BLOCK_A_4__,ball_neu.posx, ball_neu.posy,1);
+		block(__BLOCK_A_5__,ball_neu.posx, ball_neu.posy,0);
+		block(__BLOCK_A_6__,ball_neu.posx, ball_neu.posy,1);
+		block(__BLOCK_A_7__,ball_neu.posx, ball_neu.posy,0);
 		
-		block8(ball_neu.posx, ball_neu.posy);
-		block9(ball_neu.posx, ball_neu.posy);
-		block10(ball_neu.posx, ball_neu.posy);
-		block11(ball_neu.posx, ball_neu.posy);
-		block12(ball_neu.posx, ball_neu.posy);
-		block13(ball_neu.posx, ball_neu.posy);
+		/*block(__BLOCK_B_15__,ball_neu.posx, ball_neu.posy);
+		block(__BLOCK_B_25__,ball_neu.posx, ball_neu.posy);
+		block(__BLOCK_B_35__,ball_neu.posx, ball_neu.posy);
+		block(__BLOCK_B_45__,ball_neu.posx, ball_neu.posy);
+		block(__BLOCK_B_55__,ball_neu.posx, ball_neu.posy);
+
+		*/
 		
 		if(T_RED)//move right
 		{
